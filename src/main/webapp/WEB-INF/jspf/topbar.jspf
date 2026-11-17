@@ -1,0 +1,24 @@
+<%--
+  Shared topbar.
+  Expects these variables in scope from the including page:
+    String pageTitle
+    String pageCrumb   (optional, small breadcrumb text)
+--%>
+<div class="topbar">
+	<div>
+		<div class="topbar-title"><%=pageTitle%></div>
+		<%
+		if (pageCrumb != null) {
+		%>
+		<div class="crumb"><%=pageCrumb%></div>
+		<%
+		}
+		%>
+	</div>
+	<div class="topbar-right" style="display: flex; align-items: center; gap: 14px;">
+		<div class="topbar-badge">
+			<span class="dot"></span> System Online
+		</div>
+		<%@ include file="/WEB-INF/jspf/notificationBar.jspf" %>
+	</div>
+</div>

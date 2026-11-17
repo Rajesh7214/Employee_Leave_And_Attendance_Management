@@ -1,0 +1,288 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%--
+  Shared sidebar navigation with 3-lines sidebar collapse toggle.
+  Safely resolves sbRole, sbDisplayName, and sbActivePage from scope, request, or session.
+--%>
+<%
+String sbRole = null;
+try {
+	Object rObj = pageContext.findAttribute("role");
+	if (rObj != null) sbRole = rObj.toString();
+} catch (Exception ignored) {}
+
+if (sbRole == null || sbRole.isBlank()) {
+	sbRole = (String) session.getAttribute("role");
+}
+if (sbRole == null && session.getAttribute("loggedUser") != null) {
+	sbRole = ((com.rajesh.elams.model.User) session.getAttribute("loggedUser")).getRole();
+}
+if (sbRole == null) sbRole = "employee";
+
+String sbDisplayName = null;
+try {
+	Object dnObj = pageContext.findAttribute("displayName");
+	if (dnObj != null) sbDisplayName = dnObj.toString();
+} catch (Exception ignored) {}
+
+if (sbDisplayName == null || sbDisplayName.isBlank()) {
+	com.rajesh.elams.model.User _u = (com.rajesh.elams.model.User) session.getAttribute("loggedUser");
+	com.rajesh.elams.model.Employee _e = (com.rajesh.elams.model.Employee) session.getAttribute("employee");
+	if (_e != null && _e.getEmployee_name() != null && !_e.getEmployee_name().isBlank()) {
+		sbDisplayName = _e.getEmployee_name();
+	} else if (_u != null && _u.getEmail() != null) {
+		sbDisplayName = _u.getEmail().split("@")[0];
+		sbDisplayName = Character.toUpperCase(sbDisplayName.charAt(0)) + (sbDisplayName.length() > 1 ? sbDisplayName.substring(1) : "");
+	} else {
+		sbDisplayName = "User";
+	}
+}
+
+String sbActivePage = null;
+try {
+	Object apObj = pageContext.findAttribute("activePage");
+	if (apObj != null) sbActivePage = apObj.toString();
+} catch (Exception ignored) {}
+if (sbActivePage == null) sbActivePage = "";
+%>
+<div class="sidebar" id="appSidebar">
+	<div class="sidebar-brand">
+		<div class="mark">
+			<i class="fa-solid fa-shield-halved"></i>
+		</div>
+		<div class="name">
+			RChips Solutions <small>Workforce Suite</small>
+		</div>
+		<button type="button" class="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" title="Toggle Menu (3 Lines)">
+			<i class="fa-solid fa-bars"></i>
+		</button>
+	</div>
+
+	<nav class="sidebar-nav">
+		<div class="sidebar-section-label">Overview</div>
+		<a
+			href="<%="admin".equalsIgnoreCase(sbRole) ? "adminDashboardServlet"
+		: "hr".equalsIgnoreCase(sbRole) ? "hrDashboard"
+		: "manager".equalsIgnoreCase(sbRole) ? "managerDashboard" : "employeeDashboardServlet"%>"
+			class="<%="dashboard".equals(sbActivePage) ? "active" : ""%>"> <i
+			class="fa-solid fa-grid-2"></i> Dashboard
+		</a>
+
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "hr".equalsIgnoreCase(sbRole)) {
+		%>
+		<div class="sidebar-section-label">People</div>
+		<a href="viewEmployeesServlet"
+			class="<%="employees".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-users"></i> Employees</a>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="addEmployee.jsp"
+			class="<%="addEmployee".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-user-plus"></i> Add Employee</a>
+		<%
+		}
+		%>
+		<%
+		}
+		%>
+
+		<div class="sidebar-section-label">Attendance &amp; Leave</div>
+		<a href="attendance.jsp"
+			class="<%="attendance".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-user-clock"></i> Mark Attendance</a> <a
+			href="attendanceHistory"
+			class="<%="attendanceHistory".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-clock-rotate-left"></i> Attendance History</a>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole) || "hr".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="attendanceReportServlet"
+			class="<%="attendanceReport".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-chart-column"></i> Attendance Report</a>
+		<%
+		}
+		%>
+		<a href="applyLeave.jsp"
+			class="<%="applyLeave".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-plane-departure"></i> Apply Leave</a> <a
+			href="leaveHistory"
+			class="<%="leaveHistory".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-file-lines"></i> Leave History</a>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole) || "hr".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="leaveRequests"
+			class="<%="leaveRequests".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-calendar-check"></i> Leave Requests</a>
+		<%
+		}
+		%>
+
+		<%
+		if (!"hr".equalsIgnoreCase(sbRole)) {
+		%>
+		<div class="sidebar-section-label">Meetings</div>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="scheduleMeeting"
+			class="<%="scheduleMeeting".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-calendar-plus"></i> Schedule Meeting</a>
+		<%
+		}
+		%>
+		<a href="viewMeetings"
+			class="<%="viewMeetings".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-video"></i> View Meetings</a> <a href="myMeetings"
+			class="<%="myMeetings".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-calendar-day"></i> My Meetings</a> <a href="calendarView"
+			class="<%="calendarView".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-calendar-days"></i> Calendar View</a>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="meetingReports"
+			class="<%="meetingReports".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-chart-pie"></i> Meeting Reports</a> <a
+			href="manageMeetingRooms"
+			class="<%="manageMeetingRooms".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-door-open"></i> Meeting Rooms</a>
+		<%
+		}
+		%>
+		<%
+		}
+		%>
+
+		<%
+		if (!"hr".equalsIgnoreCase(sbRole)) {
+		%>
+		<div class="sidebar-section-label">Tasks</div>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="viewTasksServlet"
+			class="<%="tasks".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-list-check"></i> All Tasks</a>
+		<%
+		}
+		%>
+		<a href="myTasks"
+			class="<%="myTasks".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-clipboard-user"></i> My Tasks</a>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="createTask"
+			class="<%="createTask".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-square-plus"></i> Create Task</a>
+		<%
+		}
+		%>
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole)) {
+		%>
+		<a href="taskReportServlet"
+			class="<%="taskReport".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-file-invoice"></i> Task Reports</a>
+		<%
+		}
+		%>
+		<%
+		}
+		%>
+
+		<div class="sidebar-section-label">Payroll &amp; Compensation</div>
+		<% if ("admin".equalsIgnoreCase(sbRole) || "hr".equalsIgnoreCase(sbRole)) { %>
+		<a href="payrollDashboard" class="<%="payrollDashboard".equals(sbActivePage) ? "active" : ""%>"><i class="fa-solid fa-money-check-dollar"></i> Payroll Hub</a>
+		<a href="manageSalary" class="<%="manageSalary".equals(sbActivePage) ? "active" : ""%>"><i class="fa-solid fa-gears"></i> Salary Setup Centre</a>
+		<a href="payrollReport" class="<%="payrollReport".equals(sbActivePage) ? "active" : ""%>"><i class="fa-solid fa-file-invoice-dollar"></i> Payroll Reports</a>
+		<a href="myPayroll" class="<%="myPayroll".equals(sbActivePage) ? "active" : ""%>"><i class="fa-solid fa-wallet"></i> My Salary &amp; Payslips</a>
+		<% } else if ("manager".equalsIgnoreCase(sbRole)) { %>
+		<a href="teamPayroll" class="<%="teamPayroll".equals(sbActivePage) ? "active" : ""%>"><i class="fa-solid fa-users-gear"></i> Team Payroll</a>
+		<a href="myPayroll" class="<%="myPayroll".equals(sbActivePage) ? "active" : ""%>"><i class="fa-solid fa-wallet"></i> My Salary &amp; Payslips</a>
+		<% } else { %>
+		<a href="myPayroll" class="<%="myPayroll".equals(sbActivePage) ? "active" : ""%>"><i class="fa-solid fa-wallet"></i> My Salary &amp; Payslips</a>
+		<% } %>
+
+		<%
+		if ("admin".equalsIgnoreCase(sbRole) || "manager".equalsIgnoreCase(sbRole) || "hr".equalsIgnoreCase(sbRole)) {
+		%>
+		<div class="sidebar-section-label">Communication</div>
+		<a href="sendNotification"
+			class="<%="sendNotification".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-bullhorn"></i> Broadcast Notice</a>
+		<%
+		}
+		%>
+
+		<%
+		if ("admin".equalsIgnoreCase(sbRole)) {
+		%>
+		<div class="sidebar-section-label">Audit &amp; Governance</div>
+		<a href="auditLogs"
+			class="<%="auditLogs".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-clipboard-list"></i> Audit Logs</a>
+		<a href="systemSettings"
+			class="<%="systemSettings".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-sliders"></i> System Settings</a>
+		<%
+		}
+		%>
+
+		<div class="sidebar-section-label">Account</div>
+		<%
+		if (!"admin".equalsIgnoreCase(sbRole)) {
+		%>
+		<a
+			href="<%="manager".equalsIgnoreCase(sbRole) ? "managerProfile.jsp" : "employeeProfile.jsp"%>"
+			class="<%="profile".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-id-badge"></i> My Profile</a>
+		<%
+		}
+		%>
+		<a href="changePassword"
+			class="<%="changePassword".equals(sbActivePage) ? "active" : ""%>"><i
+			class="fa-solid fa-key"></i> Change Password</a>
+	</nav>
+
+	<div class="sidebar-foot">
+		<div class="sidebar-user">
+			<div class="avatar"><%=(sbDisplayName != null && sbDisplayName.length() > 0) ? String.valueOf(sbDisplayName.charAt(0)).toUpperCase() : "U"%></div>
+			<div class="who">
+				<div class="n"><%=sbDisplayName%></div>
+				<div class="r"><%=sbRole != null ? sbRole.toUpperCase() : "USER"%></div>
+			</div>
+		</div>
+		<a href="logout" class="btn-logout"><i
+			class="fa-solid fa-right-from-bracket"></i> Logout</a>
+	</div>
+</div>
+
+<style>
+.sidebar-toggle-btn {
+	background: transparent;
+	border: none;
+	color: #64748b;
+	font-size: 18px;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 8px;
+	transition: all 0.2s;
+	margin-left: auto;
+}
+.sidebar-toggle-btn:hover {
+	color: #2563eb;
+	background: #eff6ff;
+}
+</style>
+
+<script>
+function toggleSidebarCollapse() {
+	var sb = document.getElementById("appSidebar");
+	if (sb) {
+		sb.classList.toggle("collapsed");
+	}
+}
+</script>

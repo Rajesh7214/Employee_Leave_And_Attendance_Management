@@ -1,0 +1,19 @@
+# Compiled class files
+build/
+bin/
+*.class
+
+# Eclipse & VS Code metadata
+.settings/
+.vscode/
+
+# Build artifacts & temp files
+*.log
+sources*.txt
+*.tmp
+temp/
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
